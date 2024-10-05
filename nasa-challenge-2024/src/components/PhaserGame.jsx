@@ -3,6 +3,7 @@ import Phaser from "phaser";
 import astronaut from "../assets/astronaut.png";
 import collectible from "../assets/collectible.png";
 import background from "../assets/background.jpg";
+
 const PhaserGame = () => {
   const gameRef = useRef(null);
 
@@ -45,8 +46,9 @@ const PhaserGame = () => {
   let player,
     cursors,
     timerText,
-    timeLeft = 60;
+    timeLeft = 30;
   let collectibles = [];
+  let collectibleCount = 0; // Track how many collectibles are collected
 
   const create = function () {
     // Add player
@@ -68,22 +70,13 @@ const PhaserGame = () => {
     cursors = this.input.keyboard.createCursorKeys();
 
     // Timer
-    timerText = this.add.text(16, 16, "Time Left: 60", {
+    timerText = this.add.text(16, 16, "Time Left: 30", {
       fontSize: "32px",
       fill: "#ffffff",
     });
 
-    // Create collectibles
-    for (let i = 0; i < 7; i++) {
-      const collectible = this.matter.add.sprite(
-        Phaser.Math.Between(50, 750),
-        Phaser.Math.Between(50, 550),
-        "collectible"
-      );
-      collectible.setFrictionAir(0.02);
-      collectibles.push(collectible);
-      collectible.setDisplaySize(50, 70);
-    }
+    // Create the first collectible
+    createNewCollectible(this);
 
     // Collision detection
     this.matter.world.on("collisionstart", (event, bodyA, bodyB) => {
@@ -91,14 +84,38 @@ const PhaserGame = () => {
         (bodyA === player.body && collectibles.includes(bodyB.gameObject)) ||
         (bodyB === player.body && collectibles.includes(bodyA.gameObject))
       ) {
-        const collectibleIndex =
+        const collectedObject =
           collectibles.indexOf(bodyA.gameObject) !== -1
             ? bodyA.gameObject
             : bodyB.gameObject;
-        collectibleIndex.destroy();
-        collectibles.splice(collectibles.indexOf(collectibleIndex), 1); // Remove from array
+
+        // Remove the collected item
+        collectedObject.destroy();
+        collectibles = collectibles.filter((item) => item !== collectedObject);
+
+        collectibleCount++;
+
+        // Check if we need to spawn more collectibles
+        if (collectibleCount < 10) {
+          createNewCollectible(this);
+        } else {
+          timerText.setText("You Win!");
+          this.time.delayedCall(1000, () => this.scene.pause()); // pause the scene after 100ms
+        }
       }
     });
+  };
+
+  // Function to create a new collectible
+  const createNewCollectible = function (scene) {
+    const newCollectible = scene.matter.add.sprite(
+      Phaser.Math.Between(50, 750),
+      Phaser.Math.Between(50, 550),
+      "collectible"
+    );
+    newCollectible.setFrictionAir(0.02);
+    newCollectible.setDisplaySize(50, 70);
+    collectibles.push(newCollectible); // Add the new collectible to the array
   };
 
   const update = function () {
@@ -115,6 +132,19 @@ const PhaserGame = () => {
       player.applyForce({ x: 0, y: 0.01 });
     }
 
+    // Keep the player within the canvas bounds
+    if (player.x < 0) {
+      player.x = 0;
+    } else if (player.x > this.sys.canvas.width - player.displayWidth) {
+      player.x = this.sys.canvas.width - player.displayWidth;
+    }
+
+    if (player.y < 0) {
+      player.y = 0;
+    } else if (player.y > this.sys.canvas.height - player.displayHeight) {
+      player.y = this.sys.canvas.height - player.displayHeight;
+    }
+
     // Timer logic
     timeLeft -= 1 / 60;
     timerText.setText(`Time Left: ${Math.ceil(timeLeft)}`);
@@ -123,19 +153,12 @@ const PhaserGame = () => {
       this.scene.pause(); // End the game
       timerText.setText("Game Over! You lose.");
     }
-
-    // Check if all collectibles are collected
-    if (collectibles.length === 0) {
-      this.scene.pause(); // End the game
-      timerText.setText("You Win!");
-    }
   };
 
   return (
     <div
       ref={gameRef}
       style={{
-        backgroundImage: `url(${background})`,
         width: "800px",
         height: "600px",
         margin: "40px auto",

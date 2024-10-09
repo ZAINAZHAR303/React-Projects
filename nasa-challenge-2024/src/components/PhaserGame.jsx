@@ -98,10 +98,13 @@ const PhaserGame = () => {
         // Check if we need to spawn more collectibles
         if (collectibleCount < 10) {
           createNewCollectible(this);
-        } else {
-          timerText.setText("You Win!");
-          this.time.delayedCall(1000, () => this.scene.pause()); // pause the scene after 100ms
+        } else if(collectibleCount === 10) {
+          timerText.setText("you win");
+          this.scene.pause(); // End the game
+           // pause the scene after 100ms
         }
+
+        
       }
     });
   };

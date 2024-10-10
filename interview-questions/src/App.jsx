@@ -3,7 +3,8 @@ import { useState } from 'react'
 import './App.css'
 import menus from "./components/TreeView/data"
 import TreeView from './components/TreeView/TreeView'
-import List from './components/TreeView/list'
+
+import QrGenerator from './components/qr-code-generator/QrGenerator'
 
 function App() {
 
@@ -13,9 +14,9 @@ function App() {
 
   return (
     <>
-      <TreeView menus={menus} />
-      {/* <List /> */}
-     {/* <h1>hello</h1> */}
+      {/* <TreeView menus={menus} /> */}
+      
+     <QrGenerator />
     </>
   )
 }

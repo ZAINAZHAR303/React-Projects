@@ -5,6 +5,7 @@ import menus from "./components/TreeView/data"
 import TreeView from './components/TreeView/TreeView'
 
 import QrGenerator from './components/qr-code-generator/QrGenerator'
+import LightDarkMode from './components/light-dark-mode/LightDarkMode'
 
 function App() {
 
@@ -16,7 +17,8 @@ function App() {
     <>
       {/* <TreeView menus={menus} /> */}
       
-     <QrGenerator />
+     {/* <QrGenerator /> */}
+     <LightDarkMode />
     </>
   )
 }
